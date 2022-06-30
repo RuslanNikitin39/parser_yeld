@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup as bs
 import csv
 
-WORK_URL = 'https://www.yelp.com/search?find_desc=Hair+Salons&find_loc=New+York%2C+NY%2C+United+States'
+# WORK_URL = 'https://www.yelp.com/search?find_desc=Hair+Salons&find_loc=New+York%2C+NY%2C+United+States'
 # BASE_URL = 'https://www.yelp.com'
 
 def get_hiders():
@@ -147,8 +147,8 @@ def save(rows, path):
 
 
 if __name__ == '__main__':
-    # work_url = input('Введите адрес: ')
-    work_url = WORK_URL
+    work_url = input('Введите адрес: ')
+    # work_url = WORK_URL
     print('Выберите директорию для сохранения файла.')
     current_path = asksaveasfilename()
     if current_path:
