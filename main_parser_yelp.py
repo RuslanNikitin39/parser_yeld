@@ -142,7 +142,8 @@ def get_links(current_url):
 
 def save(rows, path):
     with open(path, 'w', encoding='utf-8', newline='\n') as csvfile:
-        writer = csv.writer(csvfile)
+        csv.register_dialect('myDialect', delimiter=';', quoting=csv.QUOTE_NONE)
+        writer = csv.writer(csvfile, dialect='myDialect')
         writer.writerow(('name', 'web_site', 'owner_name', 'owner_status'))
 
         for row in rows:
