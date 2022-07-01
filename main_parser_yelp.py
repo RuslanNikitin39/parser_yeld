@@ -60,9 +60,6 @@ def get_hiders():
     return headers
 
 
-def get_timeout():
-    return random.randrange(5, 20)
-
 def run_request(current_url):
     response = requests.get(current_url)
     return response
@@ -131,14 +128,14 @@ def get_links(current_url):
                 d_list.append(data_dict)
                 print(f'\t{data_dict}')
                 # time.sleep(10)
-                time.sleep(get_timeout())
+                time.sleep(random.randint(3, 20))
 
         last_page_num = int(pag_nav.find_all('div', class_='undefined display--inline-block__09f24__fEDiJ '
                                                            'border-color--default__09f24__NPAKY')[-2].text) * 10
         pages = last_page_num if pages < last_page_num else pages
         params['start'] += 10
         # time.sleep(10)
-        time.sleep(get_timeout())
+        time.sleep(random.randint(3, 20))
 
     return d_list
 
