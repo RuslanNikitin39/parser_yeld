@@ -129,14 +129,14 @@ def get_links(current_url):
                 d_list.append(data_dict)
                 print(f'\t{data_dict}')
                 # time.sleep(10)
-                time.sleep(random.randint(3, 20))
+                time.sleep(random.randint(7, 20))
 
         last_page_num = int(pag_nav.find_all('div', class_='undefined display--inline-block__09f24__fEDiJ '
                                                            'border-color--default__09f24__NPAKY')[-2].text) * 10
         pages = last_page_num if pages < last_page_num else pages
         params['start'] += 10
         # time.sleep(10)
-        time.sleep(random.randint(3, 20))
+        time.sleep(random.randint(7, 20))
 
     return d_list
 
