@@ -66,11 +66,11 @@ def run_request(current_url):
     return response
 
 
-def get_links(current_url, path):
+def get_links(current_url, path, page):
     url = urlparse(work_url)
     base_url = f'{url.scheme}://{url.netloc}'
-    params = {'start': 0}
-    pages = 10
+    params = {'start': page}
+    pages = 10 + page
     d_list = []
 
     headers = get_hiders()
@@ -86,7 +86,6 @@ def get_links(current_url, path):
                 response = requests.get(current_url, headers=headers)
             else:
                 response = requests.get(current_url, headers=headers, params=params)
-            # response.raise_for_status()
             if not response.status_code == 200:
                 print(f'Ошибка: {response.status_code}')
                 break
@@ -137,14 +136,12 @@ def get_links(current_url, path):
                     print(f'\t{data_dict}')
                     writer.writerow(
                         (data_dict['name'], data_dict['web_site'], data_dict['owner_name'], data_dict['owner_status']))
-                    # time.sleep(10)
                     time.sleep(random.randint(7, 20))
 
             last_page_num = int(pag_nav.find_all('div', class_='undefined display--inline-block__09f24__fEDiJ '
                                                                'border-color--default__09f24__NPAKY')[-2].text) * 10
             pages = last_page_num if pages < last_page_num else pages
             params['start'] += 10
-            # time.sleep(10)
             time.sleep(random.randint(7, 20))
 
     return d_list
@@ -163,10 +160,16 @@ def save(rows, path):
 if __name__ == '__main__':
     work_url = input('Введите адрес: ')
     # work_url = WORK_URL
+    start_page = input('Введите начальную страницу: ')
+
+    if start_page == '':
+        start_page = 0
+    else:
+        start_page = (int(start_page) - 1) * 10
     print('Выберите директорию для сохранения файла.')
 
     current_path = asksaveasfilename(filetypes=[("csv", ".csv")], initialfile='*.csv')
     if current_path:
-        data = get_links(work_url, current_path)
+        data = get_links(work_url, current_path, start_page)
         # save(data, current_path)
         print(f'Данные сохранены в {current_path}')
