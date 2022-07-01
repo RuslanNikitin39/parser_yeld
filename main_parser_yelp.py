@@ -66,7 +66,7 @@ def run_request(current_url):
     return response
 
 
-def get_links(current_url):
+def get_links(current_url, path):
     url = urlparse(work_url)
     base_url = f'{url.scheme}://{url.netloc}'
     params = {'start': 0}
@@ -75,68 +75,77 @@ def get_links(current_url):
 
     headers = get_hiders()
 
-    while params['start'] <= pages:
-        print(f'Обрабатываю {int((params["start"] + 10) / 10)} страницу... ')
-        if int(params["start"]) == 0:
-            response = requests.get(current_url, headers=headers)
-        else:
-            response = requests.get(current_url, headers=headers, params=params)
-        # response.raise_for_status()
-        if not response.status_code == 200:
-            print(f'Ошибка: {response.status_code}')
-            break
-        text = response.text
-        soup = bs(text, "html.parser")
+    with open(path, 'w', encoding='utf-8', newline='\n') as csvfile:
+        csv.register_dialect('myDialect', delimiter=';', quoting=csv.QUOTE_NONE)
+        writer = csv.writer(csvfile, dialect='myDialect')
+        writer.writerow(('name', 'web_site', 'owner_name', 'owner_status'))
 
-        cards = soup.find_all('a', class_='css-1m051bw')
-        pag_nav = soup.find('div', attrs={'aria-label': 'Pagination navigation'})
+        while params['start'] <= pages:
+            print(f'Обрабатываю {int((params["start"] + 10) / 10)} страницу... ')
+            if int(params["start"]) == 0:
+                response = requests.get(current_url, headers=headers)
+            else:
+                response = requests.get(current_url, headers=headers, params=params)
+            # response.raise_for_status()
+            if not response.status_code == 200:
+                print(f'Ошибка: {response.status_code}')
+                break
+            text = response.text
+            soup = bs(text, "html.parser")
 
-        for card in cards:
-            link_card = card.attrs['href']
-            if '/biz/' in link_card:
-                data_dict = {}
-                name_card = card.attrs['name']
-                data_dict['name'] = name_card
-                response = run_request(base_url + link_card)
-                if not response.status_code == 200:
-                    print(f'Ошибка: {response.status_code}')
-                    continue
-                c_text = response.text
-                c_soup = bs(c_text, "html.parser")
-                web_site = c_soup.find_all('a', class_='css-1um3nx', rel='noopener')
-                if web_site:
-                    data_dict['web_site'] = web_site[0].text
-                else:
-                    data_dict['web_site'] = 'None'
-                business_info = c_soup.find_all('section', attrs={'aria-label': 'About the Business'})
-                if business_info:
-                    owner_name = business_info[0].find('p', class_='css-ux5mu6', attrs={'data-font-weight': 'bold'})
-                else:
-                    data_dict['owner_name'] = 'None'
-                    data_dict['owner_status'] = 'None'
+            cards = soup.find_all('a', class_='css-1m051bw')
+            pag_nav = soup.find('div', attrs={'aria-label': 'Pagination navigation'})
+
+            for card in cards:
+                link_card = card.attrs['href']
+                if '/biz/' in link_card:
+                    data_dict = {}
+                    name_card = card.attrs['name']
+                    data_dict['name'] = name_card
+                    response = run_request(base_url + link_card)
+                    if not response.status_code == 200:
+                        print(f'Ошибка: {response.status_code}')
+                        continue
+                    c_text = response.text
+                    c_soup = bs(c_text, "html.parser")
+                    web_site = c_soup.find_all('a', class_='css-1um3nx', rel='noopener')
+                    if web_site:
+                        data_dict['web_site'] = web_site[0].text
+                    else:
+                        data_dict['web_site'] = 'None'
+                    business_info = c_soup.find_all('section', attrs={'aria-label': 'About the Business'})
+                    if business_info:
+                        owner_name = business_info[0].find('p', class_='css-ux5mu6', attrs={'data-font-weight': 'bold'})
+                    else:
+                        data_dict['owner_name'] = 'None'
+                        data_dict['owner_status'] = 'None'
+                        d_list.append(data_dict)
+                        print(f'\t{data_dict}')
+                        writer.writerow(
+                            (data_dict['name'], data_dict['web_site'], data_dict['owner_name'], data_dict['owner_status']))
+                        continue
+                    if owner_name:
+                        data_dict['owner_name'] = owner_name.text
+                    else:
+                        data_dict['owner_name'] = 'None'
+                    owner_status = business_info[0].find('p', class_='css-chan6m', attrs={'aria-hidden': 'true'})
+                    if owner_status:
+                        data_dict['owner_status'] = owner_status.text
+                    else:
+                        data_dict['owner_status'] = 'None'
                     d_list.append(data_dict)
                     print(f'\t{data_dict}')
-                    continue
-                if owner_name:
-                    data_dict['owner_name'] = owner_name.text
-                else:
-                    data_dict['owner_name'] = 'None'
-                owner_status = business_info[0].find('p', class_='css-chan6m', attrs={'aria-hidden': 'true'})
-                if owner_status:
-                    data_dict['owner_status'] = owner_status.text
-                else:
-                    data_dict['owner_status'] = 'None'
-                d_list.append(data_dict)
-                print(f'\t{data_dict}')
-                # time.sleep(10)
-                time.sleep(random.randint(7, 20))
+                    writer.writerow(
+                        (data_dict['name'], data_dict['web_site'], data_dict['owner_name'], data_dict['owner_status']))
+                    # time.sleep(10)
+                    time.sleep(random.randint(7, 20))
 
-        last_page_num = int(pag_nav.find_all('div', class_='undefined display--inline-block__09f24__fEDiJ '
-                                                           'border-color--default__09f24__NPAKY')[-2].text) * 10
-        pages = last_page_num if pages < last_page_num else pages
-        params['start'] += 10
-        # time.sleep(10)
-        time.sleep(random.randint(7, 20))
+            last_page_num = int(pag_nav.find_all('div', class_='undefined display--inline-block__09f24__fEDiJ '
+                                                               'border-color--default__09f24__NPAKY')[-2].text) * 10
+            pages = last_page_num if pages < last_page_num else pages
+            params['start'] += 10
+            # time.sleep(10)
+            time.sleep(random.randint(7, 20))
 
     return d_list
 
@@ -158,6 +167,6 @@ if __name__ == '__main__':
 
     current_path = asksaveasfilename(filetypes=[("csv", ".csv")], initialfile='*.csv')
     if current_path:
-        data = get_links(work_url)
-        save(data, current_path)
+        data = get_links(work_url, current_path)
+        # save(data, current_path)
         print(f'Данные сохранены в {current_path}')
