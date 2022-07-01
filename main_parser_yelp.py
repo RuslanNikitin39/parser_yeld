@@ -1,10 +1,11 @@
 import time
 import random
-from tkinter.filedialog import askdirectory, asksaveasfilename
+from tkinter.filedialog import askdirectory, asksaveasfilename, asksaveasfile
 from urllib.parse import urlparse
 import requests
 from bs4 import BeautifulSoup as bs
 import csv
+
 
 # WORK_URL = 'https://www.yelp.com/search?find_desc=Hair+Salons&find_loc=New+York%2C+NY%2C+United+States'
 # BASE_URL = 'https://www.yelp.com'
@@ -154,9 +155,9 @@ if __name__ == '__main__':
     work_url = input('Введите адрес: ')
     # work_url = WORK_URL
     print('Выберите директорию для сохранения файла.')
-    current_path = asksaveasfilename()
+
+    current_path = asksaveasfilename(filetypes=[("csv", ".csv")], initialfile='*.csv')
     if current_path:
-        print(current_path)
         data = get_links(work_url)
         save(data, current_path)
         print(f'Данные сохранены в {current_path}')
