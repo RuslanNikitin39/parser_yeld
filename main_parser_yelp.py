@@ -66,6 +66,35 @@ def run_request(current_url):
     return response
 
 
+def get_website(date_soup, b_url):
+    ws = date_soup.find_all('a', class_='css-1um3nx', rel='noopener')
+    website = 'None'
+    if ws:
+        ws_d = ws[0].text.split('.')
+        if len(ws_d) == 3:
+            n = 0
+            for el in ws_d:
+                if '…' in el:
+                    ws_d[n] = el.replace('…', '')
+                n += 1
+            return f'{ws_d[0]}.{ws_d[1]}.{ws_d[2]}'
+        else:
+            link = ws[0].attrs['href'].replace('/biz_redir?url=http%3A%2F%2F', '')
+            link_list = link.split('&')[0].split('.')
+            n = 0
+            for el in link_list:
+                if '%' in el:
+                    i = 0
+                    new_el = ''
+                    while not el[i] == '%':
+                        new_el = new_el + el[i]
+                        i += 1
+                    link_list[n] = new_el
+                n += 1
+            return f'http://www.{link_list[-2]}.{link_list[-1]}'
+    return website
+
+
 def get_links(current_url, path, page):
     url = urlparse(work_url)
     base_url = f'{url.scheme}://{url.netloc}'
@@ -107,13 +136,10 @@ def get_links(current_url, path, page):
                         continue
                     c_text = response.text
                     c_soup = bs(c_text, "html.parser")
-                    web_site = c_soup.find_all('a', class_='css-1um3nx', rel='noopener')
-                    if web_site:
-                        data_dict['web_site'] = web_site[0].text
-                    else:
-                        data_dict['web_site'] = 'None'
-                    business_info = c_soup.find_all('section', attrs={'aria-label': 'About the Business'})
 
+                    data_dict['web_site'] = get_website(c_soup, base_url)
+
+                    business_info = c_soup.find_all('section', attrs={'aria-label': 'About the Business'})
                     if business_info:
                         owner_name = business_info[0].find('p', class_='css-ux5mu6', attrs={'data-font-weight': 'bold'})
                         if owner_name:
@@ -143,10 +169,17 @@ def get_links(current_url, path, page):
                                 else:
                                     data_dict['owner_name'] = list_own[0].strip()
 
+                    create_email(data_dict)
+
                     d_list.append(data_dict)
                     print(f'\t{data_dict}')
                     writer.writerow(
-                        (data_dict['name'], data_dict['web_site'], data_dict['owner_name'], data_dict['owner_status']))
+                        (data_dict['name'],
+                         data_dict['web_site'],
+                         data_dict['owner_name'],
+                         data_dict['owner_status'],
+                         data_dict['e-mail']
+                         ))
                     time.sleep(random.randint(7, 20))
 
             last_page_num = int(pag_nav.find_all('div', class_='undefined display--inline-block__09f24__fEDiJ '
@@ -155,17 +188,23 @@ def get_links(current_url, path, page):
             params['start'] += 10
             time.sleep(random.randint(7, 20))
 
-    return d_list
 
 
-def save(rows, path):
-    with open(path, 'w', encoding='utf-8', newline='\n') as csvfile:
-        csv.register_dialect('myDialect', delimiter=';', quoting=csv.QUOTE_NONE)
-        writer = csv.writer(csvfile, dialect='myDialect')
-        writer.writerow(('name', 'web_site', 'owner_name', 'owner_status'))
+def create_email(c_dict):
+    c_dict['e-mail'] = 'None'
+    if not c_dict['owner_name'] == 'None' and not c_dict['web_site'] == 'None':
+        list_for_adress = c_dict['web_site'].split('.')
+        c_dict['e-mail'] = f"{c_dict['owner_name'].replace(' ', '').replace('.', '')}@{list_for_adress[-2]}.{list_for_adress[-1]}".lower()
 
-        for row in rows:
-            writer.writerow((row['name'], row['web_site'], row['owner_name'], row['owner_status']))
+
+# def save(rows, path):
+#     with open(path, 'w', encoding='utf-8', newline='\n') as csvfile:
+#         csv.register_dialect('myDialect', delimiter=';', quoting=csv.QUOTE_NONE)
+#         writer = csv.writer(csvfile, dialect='myDialect')
+#         writer.writerow(('name', 'web_site', 'owner_name', 'owner_status'))
+#
+#         for row in rows:
+#             writer.writerow((row['name'], row['web_site'], row['owner_name'], row['owner_status']))
 
 
 if __name__ == '__main__':
@@ -181,6 +220,5 @@ if __name__ == '__main__':
 
     current_path = asksaveasfilename(filetypes=[("csv", ".csv")], initialfile='*.csv')
     if current_path:
-        data = get_links(work_url, current_path, start_page)
-        # save(data, current_path)
+        get_links(work_url, current_path, start_page)
         print(f'Данные сохранены в {current_path}')
