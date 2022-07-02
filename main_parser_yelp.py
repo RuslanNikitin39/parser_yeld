@@ -137,8 +137,11 @@ def get_links(current_url, path, page):
                                                          attrs={'data-font-weight': 'semibold'})
                             if owner_name:
                                 list_own = owner_name.text.split(',')
-                                data_dict['owner_name'] = list_own[0]
-                                data_dict['owner_status'] = list_own[1].strip()
+                                if len(list_own) > 1:
+                                    data_dict['owner_name'] = list_own[0]
+                                    data_dict['owner_status'] = list_own[1].strip()
+                                else:
+                                    data_dict['owner_name'] = list_own[0].strip()
 
                     d_list.append(data_dict)
                     print(f'\t{data_dict}')
