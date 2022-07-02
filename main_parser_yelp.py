@@ -113,25 +113,33 @@ def get_links(current_url, path, page):
                     else:
                         data_dict['web_site'] = 'None'
                     business_info = c_soup.find_all('section', attrs={'aria-label': 'About the Business'})
+
                     if business_info:
                         owner_name = business_info[0].find('p', class_='css-ux5mu6', attrs={'data-font-weight': 'bold'})
+                        if owner_name:
+                            data_dict['owner_name'] = owner_name.text
+                        else:
+                            data_dict['owner_name'] = 'None'
+
+                        owner_status = business_info[0].find('p', class_='css-chan6m', attrs={'aria-hidden': 'true'})
+                        if owner_status:
+                            data_dict['owner_status'] = owner_status.text
+                        else:
+                            data_dict['owner_status'] = 'None'
                     else:
                         data_dict['owner_name'] = 'None'
                         data_dict['owner_status'] = 'None'
-                        d_list.append(data_dict)
-                        print(f'\t{data_dict}')
-                        writer.writerow(
-                            (data_dict['name'], data_dict['web_site'], data_dict['owner_name'], data_dict['owner_status']))
-                        continue
-                    if owner_name:
-                        data_dict['owner_name'] = owner_name.text
-                    else:
-                        data_dict['owner_name'] = 'None'
-                    owner_status = business_info[0].find('p', class_='css-chan6m', attrs={'aria-hidden': 'true'})
-                    if owner_status:
-                        data_dict['owner_status'] = owner_status.text
-                    else:
-                        data_dict['owner_status'] = 'None'
+                    # если в основной части нет данных о владельце, поищем в комментах
+                    if data_dict['owner_status'] == 'None' or not data_dict['owner_status'] == 'Business Owner':
+                        ask_com = c_soup.find_all('section', attrs={'aria-label': 'Ask the Community'})
+                        if ask_com:
+                            owner_name = ask_com[0].find('span', class_='css-1fnccdf',
+                                                         attrs={'data-font-weight': 'semibold'})
+                            if owner_name:
+                                list_own = owner_name.text.split(',')
+                                data_dict['owner_name'] = list_own[0]
+                                data_dict['owner_status'] = list_own[1].strip()
+
                     d_list.append(data_dict)
                     print(f'\t{data_dict}')
                     writer.writerow(
