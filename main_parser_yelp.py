@@ -70,28 +70,21 @@ def get_website(date_soup, b_url):
     ws = date_soup.find_all('a', class_='css-1um3nx', rel='noopener')
     website = 'None'
     if ws:
-        ws_d = ws[0].text.split('.')
-        if len(ws_d) == 3:
-            n = 0
-            for el in ws_d:
-                if '…' in el:
-                    ws_d[n] = el.replace('…', '')
-                n += 1
-            return f'{ws_d[0]}.{ws_d[1]}.{ws_d[2]}'
-        else:
-            link = ws[0].attrs['href'].replace('/biz_redir?url=http%3A%2F%2F', '')
-            link_list = link.split('&')[0].split('.')
-            n = 0
-            for el in link_list:
-                if '%' in el:
-                    i = 0
-                    new_el = ''
-                    while not el[i] == '%':
-                        new_el = new_el + el[i]
-                        i += 1
-                    link_list[n] = new_el
-                n += 1
-            return f'http://www.{link_list[-2]}.{link_list[-1]}'
+        link = ws[0].attrs['href'].replace('/biz_redir?url=http%3A%2F%2F', '').replace('/biz_redir?url=https%3A%2F%2F', '')
+        link_list = link.split('&')[0].split('.')
+        if not link_list[0] == 'www':
+            link_list.insert(0, 'www')
+        n = 0
+        for el in link_list:
+            if '%' in el:
+                i = 0
+                new_el = ''
+                while not el[i] == '%':
+                    new_el = new_el + el[i]
+                    i += 1
+                link_list[n] = new_el
+            n += 1
+        return f'http://{".".join(link_list)}'
     return website
 
 
