@@ -70,10 +70,10 @@ def get_website(date_soup, b_url):
     ws = date_soup.find_all('a', class_='css-1um3nx', rel='noopener')
     website = 'None'
     if ws:
-        link = ws[0].attrs['href'].replace('/biz_redir?url=http%3A%2F%2F', '').replace('/biz_redir?url=https%3A%2F%2F', '')
+        link = ws[0].attrs['href'].replace('/biz_redir?url=http%3A%2F%2F', 'http://www.').replace('/biz_redir?url=https%3A%2F%2F', 'https://www.')
         link_list = link.split('&')[0].split('.')
-        if not link_list[0] == 'www':
-            link_list.insert(0, 'www')
+        if link_list[1] == 'www':
+            link_list.pop(1)
         n = 0
         for el in link_list:
             if '%' in el:
@@ -84,7 +84,7 @@ def get_website(date_soup, b_url):
                     i += 1
                 link_list[n] = new_el
             n += 1
-        return f'http://{".".join(link_list)}'
+        return f'{".".join(link_list)}'
     return website
 
 
