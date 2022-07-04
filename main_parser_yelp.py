@@ -1,10 +1,12 @@
 import time
+from datetime import datetime
 import random
 from tkinter.filedialog import askdirectory, asksaveasfilename, asksaveasfile
 from urllib.parse import urlparse
 import requests
 from bs4 import BeautifulSoup as bs
 import csv
+import os
 
 
 # WORK_URL = 'https://www.yelp.com/search?find_desc=Hair+Salons&find_loc=New+York%2C+NY%2C+United+States'
@@ -100,7 +102,7 @@ def get_links(current_url, path, page):
     with open(path, 'w', encoding='utf-8', newline='\n') as csvfile:
         csv.register_dialect('myDialect', delimiter=';', quoting=csv.QUOTE_NONE)
         writer = csv.writer(csvfile, dialect='myDialect')
-        writer.writerow(('name', 'web_site', 'owner_name', 'owner_status'))
+        writer.writerow(('name', 'web_site', 'owner_name', 'owner_status', 'e-mail'))
 
         while params['start'] <= pages:
             print(f'Обрабатываю {int((params["start"] + 10) / 10)} страницу... ')
@@ -117,7 +119,13 @@ def get_links(current_url, path, page):
             cards = soup.find_all('a', class_='css-1m051bw')
             pag_nav = soup.find('div', attrs={'aria-label': 'Pagination navigation'})
 
+            time_counter = 0
             for card in cards:
+
+                if time_counter == 3:
+                    time_counter = 0
+                    time.sleep(random.randint(20, 30))
+
                 link_card = card.attrs['href']
                 if '/biz/' in link_card:
                     data_dict = {}
@@ -173,13 +181,14 @@ def get_links(current_url, path, page):
                          data_dict['owner_status'],
                          data_dict['e-mail']
                          ))
-                    time.sleep(random.randint(7, 20))
+                    time_counter += 1
+                    time.sleep(random.randint(10, 20))
 
             last_page_num = int(pag_nav.find_all('div', class_='undefined display--inline-block__09f24__fEDiJ '
                                                                'border-color--default__09f24__NPAKY')[-2].text) * 10
             pages = last_page_num if pages < last_page_num else pages
             params['start'] += 10
-            time.sleep(random.randint(7, 20))
+            time.sleep(random.randint(10, 20))
 
 
 
@@ -209,9 +218,13 @@ if __name__ == '__main__':
         start_page = 0
     else:
         start_page = (int(start_page) - 1) * 10
-    print('Выберите директорию для сохранения файла.')
+    # print('Выберите директорию для сохранения файла.')
 
-    current_path = asksaveasfilename(filetypes=[("csv", ".csv")], initialfile='*.csv')
-    if current_path:
-        get_links(work_url, current_path, start_page)
-        print(f'Данные сохранены в {current_path}')
+    file_name = datetime.now().strftime("%d%m%Y-%H%M%S")+'.csv'
+    print(file_name)
+
+    # current_path = asksaveasfilename(filetypes=[("csv", ".csv")], initialfile='*.csv')
+    if file_name:
+        # current_path:
+        get_links(work_url, file_name, start_page)
+        print(f'Данные сохранены в {file_name}')
