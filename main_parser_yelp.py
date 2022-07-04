@@ -167,8 +167,6 @@ def get_links(current_url, path, page):
                                 if len(list_own) > 1:
                                     data_dict['owner_name'] = list_own[0]
                                     data_dict['owner_status'] = list_own[1].strip()
-                                else:
-                                    data_dict['owner_name'] = list_own[0].strip()
 
                     create_email(data_dict)
 
@@ -189,7 +187,6 @@ def get_links(current_url, path, page):
             pages = last_page_num if pages < last_page_num else pages
             params['start'] += 10
             time.sleep(random.randint(10, 20))
-
 
 
 def create_email(c_dict):
