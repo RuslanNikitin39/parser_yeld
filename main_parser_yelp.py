@@ -12,6 +12,17 @@ import os
 # WORK_URL = 'https://www.yelp.com/search?find_desc=Hair+Salons&find_loc=New+York%2C+NY%2C+United+States'
 # BASE_URL = 'https://www.yelp.com'
 
+
+# def save(rows, path):
+#     with open(path, 'w', encoding='utf-8', newline='\n') as csvfile:
+#         csv.register_dialect('myDialect', delimiter=';', quoting=csv.QUOTE_NONE)
+#         writer = csv.writer(csvfile, dialect='myDialect')
+#         writer.writerow(('name', 'web_site', 'owner_name', 'owner_status'))
+#
+#         for row in rows:
+#             writer.writerow((row['name'], row['web_site'], row['owner_name'], row['owner_status']))
+
+
 def get_hiders():
     headers = {
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,'
@@ -196,31 +207,23 @@ def create_email(c_dict):
         c_dict['e-mail'] = f"{c_dict['owner_name'].replace(' ', '').replace('.', '')}@{list_for_adress[-2]}.{list_for_adress[-1]}".lower()
 
 
-# def save(rows, path):
-#     with open(path, 'w', encoding='utf-8', newline='\n') as csvfile:
-#         csv.register_dialect('myDialect', delimiter=';', quoting=csv.QUOTE_NONE)
-#         writer = csv.writer(csvfile, dialect='myDialect')
-#         writer.writerow(('name', 'web_site', 'owner_name', 'owner_status'))
-#
-#         for row in rows:
-#             writer.writerow((row['name'], row['web_site'], row['owner_name'], row['owner_status']))
-
-
 if __name__ == '__main__':
     work_url = input('Введите адрес: ')
     # work_url = WORK_URL
+
     start_page = input('Введите начальную страницу: ')
 
     if start_page == '':
         start_page = 0
     else:
         start_page = (int(start_page) - 1) * 10
-    # print('Выберите директорию для сохранения файла.')
 
     file_name = datetime.now().strftime("%d%m%Y-%H%M%S")+'.csv'
     print(file_name)
 
+    # print('Выберите директорию для сохранения файла.')
     # current_path = asksaveasfilename(filetypes=[("csv", ".csv")], initialfile='*.csv')
+
     if file_name:
         # current_path:
         get_links(work_url, file_name, start_page)
