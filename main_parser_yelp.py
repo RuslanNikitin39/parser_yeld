@@ -219,12 +219,12 @@ if __name__ == '__main__':
         start_page = (int(start_page) - 1) * 10
 
     file_name = datetime.now().strftime("%d%m%Y-%H%M%S")+'.csv'
-    print(file_name)
+    current_path = os.path.abspath(file_name)
+    print(f'Данные будут сохранены в файл: {current_path}')
 
     # print('Выберите директорию для сохранения файла.')
     # current_path = asksaveasfilename(filetypes=[("csv", ".csv")], initialfile='*.csv')
 
-    if file_name:
-        # current_path:
-        get_links(work_url, file_name, start_page)
+    if current_path:
+        get_links(work_url, current_path, start_page)
         print(f'Данные сохранены в {file_name}')
