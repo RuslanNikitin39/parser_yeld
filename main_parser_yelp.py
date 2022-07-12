@@ -113,7 +113,7 @@ def get_links(current_url, path, page):
     with open(path, 'w', encoding='utf-8', newline='\n') as csvfile:
         csv.register_dialect('myDialect', delimiter=';', quoting=csv.QUOTE_NONE)
         writer = csv.writer(csvfile, dialect='myDialect')
-        writer.writerow(('name', 'web_site', 'owner_name', 'owner_status', 'e-mail'))
+        writer.writerow(('name', 'web_site', 'owner_name', 'owner_status', 'e-mail1', 'e-mail2', 'e-mail3'))
 
         while params['start'] <= pages:
             print(f'Обрабатываю {int((params["start"] + 10) / 10)} страницу... ')
@@ -188,7 +188,9 @@ def get_links(current_url, path, page):
                          data_dict['web_site'],
                          data_dict['owner_name'],
                          data_dict['owner_status'],
-                         data_dict['e-mail']
+                         data_dict['e-mail1'],
+                         data_dict['e-mail2'],
+                         data_dict['e-mail3']
                          ))
                     time_counter += 1
                     time.sleep(random.randint(10, 20))
@@ -200,11 +202,34 @@ def get_links(current_url, path, page):
             time.sleep(random.randint(10, 20))
 
 
+def my_replace(string):
+    for ch in ['&', '#', '.', ' ', '+', '-']:
+        if ch in string:
+            string = string.replace(ch, '')
+
+    return string
+
+
 def create_email(c_dict):
-    c_dict['e-mail'] = 'None'
-    if not c_dict['owner_name'] == 'None' and not c_dict['web_site'] == 'None':
-        list_for_adress = c_dict['web_site'].split('.')
-        c_dict['e-mail'] = f"{c_dict['owner_name'].replace(' ', '').replace('.', '')}@{list_for_adress[-2]}.{list_for_adress[-1]}".lower()
+    c_dict['e-mail1'] = 'None'
+    c_dict['e-mail2'] = 'None'
+    c_dict['e-mail3'] = 'None'
+    if not c_dict['owner_name'] == 'None':
+        list_for_name = c_dict['owner_name'].split(' ')
+        if c_dict['web_site'] == 'None':
+            mail_dom = f"{my_replace(c_dict['name'])}.com"
+        else:
+            list_for_address = c_dict['web_site'].split('.')
+            mail_dom = f"{list_for_address[-2]}.{list_for_address[-1]}"
+        if len(list_for_name) == 1:
+            c_dict['e-mail1'] = f"{my_replace(c_dict['owner_name'])}@{mail_dom}".lower()
+        else:
+            last_name = list_for_name[-1]
+            first_name = list_for_name[-2]
+            c_dict['e-mail1'] = f"{my_replace(first_name + last_name)}@{mail_dom}".lower()
+            c_dict['e-mail2'] = f"{my_replace(max(list_for_name, key=len))}@{mail_dom}".lower()
+            c_dict['e-mail3'] = f"{my_replace(last_name + first_name)}@{mail_dom}".lower()
+
 
 
 if __name__ == '__main__':
