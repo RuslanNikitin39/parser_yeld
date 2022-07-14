@@ -113,7 +113,7 @@ def get_links(current_url, path, page):
     with open(path, 'w', encoding='utf-8', newline='\n') as csvfile:
         csv.register_dialect('myDialect', delimiter=';', quoting=csv.QUOTE_NONE)
         writer = csv.writer(csvfile, dialect='myDialect')
-        writer.writerow(('name', 'web_site', 'owner_name', 'owner_status', 'e-mail1', 'e-mail2', 'e-mail3'))
+        writer.writerow(('name', 'web_site', 'owner_name', 'owner_status', 'e-mail1', 'e-mail2'))
 
         while params['start'] <= pages:
             print(f'Обрабатываю {int((params["start"] + 10) / 10)} страницу... ')
@@ -141,7 +141,7 @@ def get_links(current_url, path, page):
                 if '/biz/' in link_card:
                     data_dict = {}
                     name_card = card.attrs['name']
-                    data_dict['name'] = name_card
+                    data_dict['name'] = name_card.replace('’', '\'')
                     response = run_request(base_url + link_card)
                     if not response.status_code == 200:
                         print(f'Ошибка: {response.status_code}')
@@ -149,7 +149,7 @@ def get_links(current_url, path, page):
                     c_text = response.text
                     c_soup = bs(c_text, "html.parser")
 
-                    data_dict['web_site'] = get_website(c_soup, base_url)
+                    data_dict['web_site'] = get_website(c_soup, base_url).replace('.html', '')
 
                     business_info = c_soup.find_all('section', attrs={'aria-label': 'About the Business'})
                     if business_info:
@@ -189,8 +189,7 @@ def get_links(current_url, path, page):
                          data_dict['owner_name'],
                          data_dict['owner_status'],
                          data_dict['e-mail1'],
-                         data_dict['e-mail2'],
-                         data_dict['e-mail3']
+                         data_dict['e-mail2']
                          ))
                     time_counter += 1
                     time.sleep(random.randint(10, 20))
@@ -203,9 +202,12 @@ def get_links(current_url, path, page):
 
 
 def my_replace(string):
-    for ch in ['&', '#', '.', ' ', '+', '-']:
+    for ch in ['&', '#', '.', ' ', '+', '-', '’', '\'']:
         if ch in string:
-            string = string.replace(ch, '')
+            if ch == '&':
+                string = string.replace(ch, 'and')
+            else:
+                string = string.replace(ch, '')
 
     return string
 
@@ -213,7 +215,6 @@ def my_replace(string):
 def create_email(c_dict):
     c_dict['e-mail1'] = 'None'
     c_dict['e-mail2'] = 'None'
-    c_dict['e-mail3'] = 'None'
     if not c_dict['owner_name'] == 'None':
         list_for_name = c_dict['owner_name'].split(' ')
         if c_dict['web_site'] == 'None':
@@ -224,11 +225,11 @@ def create_email(c_dict):
         if len(list_for_name) == 1:
             c_dict['e-mail1'] = f"{my_replace(c_dict['owner_name'])}@{mail_dom}".lower()
         else:
-            last_name = list_for_name[-1]
-            first_name = list_for_name[-2]
+            last_name = min(list_for_name, key=len)
+            first_name = max(list_for_name, key=len)
             c_dict['e-mail1'] = f"{my_replace(first_name + last_name)}@{mail_dom}".lower()
             c_dict['e-mail2'] = f"{my_replace(max(list_for_name, key=len))}@{mail_dom}".lower()
-            c_dict['e-mail3'] = f"{my_replace(last_name + first_name)}@{mail_dom}".lower()
+            # c_dict['e-mail3'] = f"{my_replace(last_name + first_name)}@{mail_dom}".lower()
 
 
 
