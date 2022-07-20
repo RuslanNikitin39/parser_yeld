@@ -220,8 +220,9 @@ def create_email(c_dict):
         if c_dict['web_site'] == 'None':
             mail_dom = f"{my_replace(c_dict['name'])}.com"
         else:
-            list_for_address = c_dict['web_site'].split('.')
-            mail_dom = f"{list_for_address[-2]}.{list_for_address[-1]}"
+            # list_for_address = c_dict['web_site'].split('.')
+            mail_dom = c_dict['web_site'].replace('https://www.', '').replace('http://www.', '')
+                # f"{list_for_address[-2]}.{list_for_address[-1]}"
         if len(list_for_name) == 1:
             c_dict['e-mail1'] = f"{my_replace(c_dict['owner_name'])}@{mail_dom}".lower()
         else:
