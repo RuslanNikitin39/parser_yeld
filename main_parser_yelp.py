@@ -127,7 +127,7 @@ def get_links(current_url, path, page):
             text = response.text
             soup = bs(text, "html.parser")
 
-            cards = soup.find_all('a', class_='css-1m051bw')
+            cards = soup.find_all('a', class_='css-1kb4wkh')
             pag_nav = soup.find('div', attrs={'aria-label': 'Pagination navigation'})
 
             time_counter = 0
